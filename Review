@@ -1,0 +1,17 @@
+1. Creat repository on hithub.com
+  * click 'new' 
+  * choose public/private
+  * added Python gitignore
+  * MIT licencse
+  
+2. From terminal (ideally within a 'repositories' directory, enter command:
+      $ git clone https://github.com/<girhub user name>/<repo name>.git
+    This copies the repo from github.com to my computer.
+3. Edited some file, save changes to local computer.
+4. Commit those changes to local repository:
+
+      $ git commit -am 'something interesting'
+      
+5. Now, sync back to girhub:
+
+      $ git push
