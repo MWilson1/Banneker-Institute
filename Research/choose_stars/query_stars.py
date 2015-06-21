@@ -74,9 +74,10 @@ p_star_table = Table([p_star_indice, p_star_id, p_star_spec, p_star_mass, p_star
 # customize the output of the query results
 customS = Simbad()
 customS.remove_votable_fields('coordinates')
+customS.add_votable_fields('coo(s)')
 customS.add_votable_fields('flux(B)')
 customS.add_votable_fields('flux(V)')
-customS.add_votable_fields('coo(s)')
+customS.add_votable_fields('otype(V)')
 customS.ROW_LIMIT = 4  # search for only 4 results/comparison stars
 customS.TIMEOUT = 100
 
@@ -93,8 +94,8 @@ mags_V_m = np.array(mags_V)-mag_limit
     # add/subtract to find upper and lower limits of color
                   #PROBABLY UNNECESSARY
                   
-  # criteria-query for comparison stars based on the parameters: magnitudes, vicinity, (and maybe color)
-comparison_S_tables =  [customS.query_criteria('region(circle, '+p_star_table['ID'][star]+', 3d)', 'maintypes!=V*', 'Vmag < '+str(mags_V_p[star]), 'Vmag > '+str(mags_V_m[star])) for star in xrange(len(p_star_table['ID']))]
+  # criteria-query for comparison stars based on the parameters: V magnitude, vicinity, and if it is not variable, (and maybe color)
+comparison_S_tables =  [customS.query_criteria('region(circle, '+p_star_table['ID'][star]+', 5d)', 'maintypes=*', 'maintypes!=V*', 'Vmag < '+str(mags_V_p[star]), 'Vmag > '+str(mags_V_m[star])) for star in xrange(len(p_star_table['ID']))]
 
 
 
