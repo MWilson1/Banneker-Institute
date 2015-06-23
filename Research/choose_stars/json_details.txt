@@ -1,0 +1,58 @@
+Jason Eastman
+	
+Jun 21 (1 day ago)
+		
+to me
+Hi Maurice,
+
+Great. The format of the schedule file is called "JSON", and it's a standard that many languages (including python) can write natively from a dictionary. In python, just do this:
+
+    import json, collections, datetime
+    tonight = datetime.date.today() + datetime.timedelta(days=1)
+    # specify the calibrations
+    filename = datetime.datetime.strftime(tonight,'n%Y%m%d') + '.T' + str(telnum) + '.txt'
+    with open(filename, "w") as outfile:
+        outfile.write('{"nbias": 11, "ndark": 11, "nflat": 9, "darkexptime": [300], "flatFilters": ["ip","R"]\
+    , "WaitForMorning": true}\n')
+        outfile.write('{"nbiasEnd": 11, "ndarkEnd": 11, "nflatEnd": 9}\n')
+     
+    # Add a target to the file:
+    target = collections.OrderedDict{}
+    target['name'] = name
+    target['ra'] = rahrs
+    target['dec'] = decdegs
+    target['starttime'] = datetime.datetime.strftime(starttime.datetime(),'%Y-%m-%d %H:%M:%S')
+    target['endtime'] = datetime.datetime.strftime(endtime.datetime(),'%Y-%m-%d %H:%M:%S')
+    target['filter'] = ["ip"]
+    target['exptime'] = [300]
+    target['num'] = [1]
+    target['defocus'] = 0.0
+    target['selfguide'] = True
+    target['guide'] = False
+    target['cycleFilter'] = True
+    target['positionAngle'] = 0.0
+    with open(filename, "a") as outfile:
+                        json.dump(target,outfile)
+                        outfile.write('\n')
+
+
+
+Where:
+
+    telnum is the number of the telescope to observe with
+    The first two lines of the target file specify the calibrations to do. I wouldn't change anything except the filters should match which filters you observe with.
+    name is the name of the target
+    rahrs is the RA of the target in J2000 decimal hours (e.g., if something is at RA 12:30:00, use 12.5).
+    decdegs is the Declination of the target in J2000 decimal degrees
+    starttime is a datetime object specifying when you want to start observing
+    endtime is a datetime object specifying when you want to stop observing
+    ["ip"] specifies an array of filters, in this case, just the "sloan i prime band" (you can choose from B, V, R, gp, ip, rp, zp). The array dimensions must match exptime and num, too.
+    [300] is an array of exposure times, in seconds corresponding to each filter (you can specify two exposure times in the same filter or multiple filters.
+    [1] is the number of exposures to take in each filter
+    [0.0] is the amount of defocus in mm. You'll need something pretty large here so you don't saturate on bright stars, but this and the exposure time will have to be played with. exptime = [10.0] and defocus = [3.0] is probably a good starting guess for a V=7 star.
+    True tells it to guide using the science images. Leave this as True
+    False tells it to guide using the autoguider. Leave this as False
+    cycleFilter tells it to cycle the filter while taking num exposures. Leave this as True.
+    0.0 is the angle on the sky of the image. Leave this as 0.0.
+
+If you want to add anything else to the dictionary for your benefit, feel free.
