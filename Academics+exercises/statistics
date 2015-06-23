@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+# Follow the instructions in 'ps1.pdf'
+
+import numpy.random as rand
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import rc
+
+
+plt.ion()
+
+the_mu = np.arange(20,60.1,0.5)
+#A1 = 41.4
+#sig = 2.0
+
+
+def prob(A1, the_mu, sig1, sig2, A2=None):
+    if A2==None:
+        probab = np.exp(-(1.0/2.0)*((A1 - the_mu)/sig)**2)/(sig*np.sqrt(2*np.pi))
+        probab1 = None
+        probab2 =None
+        #print(probab1)
+    else:
+        probab1 = np.exp(-(1.0/2.0)*((A1 - the_mu)/sig1)**2)/(sig1*np.sqrt(2*np.pi))
+        probab2 = np.exp(-(1.0/2.0)*((A2 - the_mu)/sig2)**2)/(sig2*np.sqrt(2*np.pi))
+        probab = probab1*probab2
+    
+    fig = plt.figure()
+    plt.plot(the_mu, probab)
+    plt.plot((A1+sig, A1+sig), (max(probab), 0),'k-')
+    plt.plot((A1-sig, A1-sig), (max(probab), 0),'k-')
+    plt.xlabel(r'$\mu$ values')
+    
+    plt.show()
+    
+    return probab, probab1, probab2 
+
+
+#prob(A1, the_mu, sig1, sig2, A2)
