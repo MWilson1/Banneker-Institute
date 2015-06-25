@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+
+import numpy as np
+import matplotlib.pyplot as plt
+import numpy.random as rand
+from scipy.stats import linregress
+
+plt.ion()
+
+x_vals = np.array([5, 6, 7, 8, 9], dtype=float)
+a_0 = np.arange(0,31, dtype=float)
+a_1 = np.arange(32,62, dtype=float)
+a_vals = np.array([a_0, a_1])
+
+                #a_1st_set = np.array([1,2])
+#a_vals = np.array([1,2])
+sigmas = np.ones(len(x_vals))*0.5
+log_L = np.ones((len(a_vals[0]),  len(a_vals[1])))
+
+row = -1.0
+
+
+def linefit(d_vals, sigmas, row):
+    for i in a_vals[0]:
+        row += 1.0
+        col = -1.0
+        for j in a_vals[1]:
+            col += 1.0
+            #for x_i in xrange(len(x_vals)):
+            a_set = np.array([i, j])
+
+            print(str(row)+'  '+str(col))
+            mu_vals = a_set[0] + a_set[1]*x_vals
+            chi_sq = np.sum(((d_vals - mu_vals)/sigmas)**2)
+            log_L[row][col] = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
+    print(log_L)
+    return log_L
+
+def poly(x_vals, a_vals, plot=False, sigmas=0):
+    a_1st_set = np.array([1,2])
+    d_vals = np.poly1d(a_1st_set)(x_vals) + sigmas*rand.randn(len(x_vals))
+
+    log_L = linefit(d_vals, sigmas, row)
+        
+    ''' 
+    d_vals = np.poly1d(a_vals)(x_vals) + sigmas*rand.randn(len(x_vals))
+    mu_vals = np.poly1d(a_vals[0])(x_vals)
+
+    chi_sq = np.sum(((d_vals - mu_vals)/sigmas)**2)
+    log_L = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
+    '''
+    
+    '''
+    x_mat = np.resize(x_vals*1.0,(len(a_vals),len(x_vals)))
+    power_mat = np.resize(np.arange(len(a_vals))*1.0, (len(x_vals), len(a_vals))).T
+    a_mat = np.resize(a_vals*1.0,(len(x_vals),len(a_vals))).T
+    mats= x_mat**power_mat*a_mat
+    y_vals = np.sum(mats, axis=0) + sigma*rand.randn(len(x_vals))
+    '''
+    
+    #x_a = x_mat.dot(a_mat)  # we are not doing matrix multiplication in this exercise    
+    #y_vals = np.poly1d(a_vals)(x_vals) + sigma*rand.randn(len(x_vals))
+    #coeffs = np.polyfit(x_vals, y_vals, len(a_vals)-1)
+    #y_vals = np.poly1d(coeffs)(x_vals) + sigma*rand.randn(len(x_vals))
+    #stats=np.linregress(x_vals, y_vals)
+    #uncert = rand.random(len(x_vals))*7
+    if plot:
+        fig1 = plt.figure(1)
+        plt.clf()
+        #!plt.scatter(x_vals, d_vals)
+        #plt.plot(x_vals, np.poly1d(np.fliplr([a_vals])[0])(x_vals))
+        #!plt.plot(x_vals, mu_vals)
+        #plt.errorbar(x_vals, y_vals, yerr = uncert, fmt='s', linewidth= 1.5)
+        plt.show()
+    return d_vals
