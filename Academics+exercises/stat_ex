@@ -2,18 +2,22 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy.random as rand
-from scipy.stats import linregress
+#import numpy.random as rand
+from pylab import *
+import numpy.random as rand  # this must come after pylab!
+from matplotlib import rc
+#from scipy.stats import linregress
 
 plt.ion()
 
-x_vals = np.array([5, 6, 7, 8, 9], dtype=float)
-a_0 = np.arange(0,31, dtype=float)
-a_1 = np.arange(32,62, dtype=float)
+x_vals = np.array([1, 2, 3, 4, 5], dtype=float)
+a_0 = np.linspace(0,4,30)
+a_1 = np.linspace(0,2,30)
 a_vals = np.array([a_0, a_1])
 
-                #a_1st_set = np.array([1,2])
+#a_1st_set = np.array([1,2])
 #a_vals = np.array([1,2])
+
 sigmas = np.ones(len(x_vals))*0.5
 log_L = np.ones((len(a_vals[0]),  len(a_vals[1])))
 
@@ -21,27 +25,30 @@ row = -1.0
 
 
 def linefit(d_vals, sigmas, row):
-    for i in a_vals[0]:
+    for j in a_vals[1]:
         row += 1.0
         col = -1.0
-        for j in a_vals[1]:
+        for i in a_vals[0]:
             col += 1.0
             #for x_i in xrange(len(x_vals)):
             a_set = np.array([i, j])
 
-            print(str(row)+'  '+str(col))
+            #print(str(row)+'  '+str(col))
             mu_vals = a_set[0] + a_set[1]*x_vals
             chi_sq = np.sum(((d_vals - mu_vals)/sigmas)**2)
             log_L[row][col] = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
-    print(log_L)
+    #print(log_L)
     return log_L
 
 def poly(x_vals, a_vals, plot=False, sigmas=0):
     a_1st_set = np.array([1,2])
     d_vals = np.poly1d(a_1st_set)(x_vals) + sigmas*rand.randn(len(x_vals))
 
-    log_L = linefit(d_vals, sigmas, row)
-        
+    Likel = np.exp(linefit(d_vals, sigmas, row))
+
+    x_Likel = np.sum(Likel, axis=0)
+    y_Likel = np.sum(Likel, axis=1)
+    
     ''' 
     d_vals = np.poly1d(a_vals)(x_vals) + sigmas*rand.randn(len(x_vals))
     mu_vals = np.poly1d(a_vals[0])(x_vals)
@@ -67,9 +74,35 @@ def poly(x_vals, a_vals, plot=False, sigmas=0):
     if plot:
         fig1 = plt.figure(1)
         plt.clf()
+        plt.scatter(x_vals, d_vals)
+        #plt.plot(x_vals, mu_vals)
+        plt.plot(x_vals, np.poly1d(a_1st_set)(x_vals))
+        
+        fig2 = plt.figure(2)
+        plt.clf()
+        x_coords, y_coords = meshgrid(a_vals[1], a_vals[0])
+        con_plot = contour(x_coords, y_coords, Likel)
+        clabel(con_plot, inline=True, fontsize=10)
+
+        fig3 = plt.figure(3)
+        plt.clf()
+        plt.plot(a_vals[0], x_Likel)
+        plt.title('1D gaussian distribution from 2D Likelihood matrix')
+        plt.xlabel(r'A$_0$ sums ')
+        plt.ylabel(r'values of Likelihood')
+
+        fig4 = plt.figure(4)
+        plt.clf()
+        plt.plot(a_vals[1], y_Likel)
+        plt.title('1D gaussian distribution from 2D Likelihood matrix')
+        plt.xlabel(r'A$_1$ sums ')
+        plt.ylabel(r'values of Likelihood')
+        #plt.limit
+
+        
         #!plt.scatter(x_vals, d_vals)
         #plt.plot(x_vals, np.poly1d(np.fliplr([a_vals])[0])(x_vals))
         #!plt.plot(x_vals, mu_vals)
         #plt.errorbar(x_vals, y_vals, yerr = uncert, fmt='s', linewidth= 1.5)
         plt.show()
-    return d_vals
+    return Likel

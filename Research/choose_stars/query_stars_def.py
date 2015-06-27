@@ -92,7 +92,7 @@ startNightTime = datetime.datetime(today.year, today.month, today.day, 17) - dat
 sunrise = obs.next_rising(ephem.Sun(), start=startNightTime,use_center=True).datetime()
 sunset = obs.next_setting(ephem.Sun(), start=startNightTime,use_center=True).datetime()
 
-if sunset < sunrise: sunset = obs.next_setting(ephem.Sun(), start=startNightTime + datetime.timedelta(days=1), use_center=True).datetime() #if so, then find the very next sunset time
+
 
 
     # Go through each primary target star and find its rise and set time.
@@ -114,7 +114,7 @@ def choose_primary(p_star_table, p_star_indice=0):
     observable = 'Not sure'
     time_l_visible = None
     start_time = None
-
+    #subsequent_sunrise = None
     
     # the "NeverUpError" can occur so I need this try statement
     try:
@@ -129,13 +129,25 @@ def choose_primary(p_star_table, p_star_indice=0):
     
     def longer_than_24hrs_and_Diff(diff_of_times): # must be a datetime type
         return np.abs(diff_of_times.days*24.0 + diff_of_times.seconds/3600.00) > 24.0 , diff_of_times.days*24.0 + diff_of_times.seconds/3600.00
-    
+
+
     #if risetime < today: risetime = obs.next_rising(body,start=startNightTime + datetime.timedelta(days=1)).datetime()
+    subsequent_sunrise = obs.next_rising(ephem.Sun(), start=startNightTime + datetime.timedelta(days=1),use_center=True).datetime()
+
+    #if p_star_indice == 116: print(subsequent_sunrise)
+    
+    '''
+    sunset_counter = 0
+    while sunset < sunrise:
+        sunset = obs.next_setting(ephem.Sun(), start=startNightTime + datetime.timedelta(days=sunset_counter), use_center=True).datetime() #if so, then find the very next sunset time
+        sunset_counter += 1
+    '''
     settime_counter = 0
     while settime < today:
         settime = obs.next_setting(body,start=startNightTime + datetime.timedelta(days=settime_counter)).datetime()   #if so, then find the very next settime
         settime_counter += 1
     if settime < risetime: settime = obs.next_setting(body,start=startNightTime + datetime.timedelta(days=1)).datetime()   #if so, then find the very next settime
+    
     if longer_than_24hrs_and_Diff(settime - risetime)[1] < 8760.0 and longer_than_24hrs_and_Diff(settime - risetime)[0] == True: risetime = obs.next_rising(body,start=startNightTime + datetime.timedelta(days=1)).datetime()   # if difference is less than a year but more than a day, then find the next risetime
     
     # at this point settime is after RIGHT NOW-time and after the risetime.   AND sunset is after sunrise time.
@@ -150,8 +162,14 @@ def choose_primary(p_star_table, p_star_indice=0):
         else:     # at this point settime is after RIGHT NOW-time, after the risetime, and after sunset time.   AND sunset is after sunrise time.
             observable = True
             if longer_than_24hrs_and_Diff(risetime - sunset)[1] > 0:     # if this Diff is positive, the risetime is after sunset
-                time_l_visible = longer_than_24hrs_and_Diff(settime - risetime)[1]
+                
+                if np.abs(longer_than_24hrs_and_Diff(subsequent_sunrise - risetime)[1]) > np.abs(longer_than_24hrs_and_Diff(settime - risetime)[1]):
+                    time_l_visible = longer_than_24hrs_and_Diff(settime - risetime)[1]
+                else:
+                    time_l_visible = longer_than_24hrs_and_Diff(subsequent_sunrise - risetime)[1]
+                    
                 start_time = risetime
+                
             else:                                                        # the risetime is before sunset
                 time_l_visible = longer_than_24hrs_and_Diff(settime - sunset)[1]
                 start_time = sunset
@@ -172,6 +190,9 @@ all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for itera
 
 best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][1] > 1.0 and np.abs(all_observables[iterate][5]) < 10.0]
 
+#best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [116, 0]]
+
+#sorted_best_observables = l
 
 # customize the output of the query results
 customS = Simbad()
@@ -207,6 +228,8 @@ def find_comparison(primary_S_indice):
 
 
 comparison_S_tables = [find_comparison(best_observables[p_S_ind][1]) for p_S_ind in xrange(len(best_observables))]
+
+
 
 
 '''
