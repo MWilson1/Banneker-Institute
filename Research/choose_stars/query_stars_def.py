@@ -129,7 +129,7 @@ def choose_primary(p_star_table, p_star_indice=0):
     try:
         risetime = obs.next_rising(body,start=startNightTime).datetime() # start=startNightTime + datetime.timedelta(days=1)    
         settime = obs.next_setting(body,start=startNightTime).datetime()
-        try_transit = obs.next_transit(body, start=startNightTime).datetime()
+        transit_t = obs.next_transit(body, start=startNightTime).datetime()
         
     except ephem.NeverUpError:
         print('The NeverUpError occurred for p_star_indice = '+str(p_star_indice))
@@ -153,7 +153,7 @@ def choose_primary(p_star_table, p_star_indice=0):
     
     if longer_than_24hrs_and_Diff(settime - risetime)[1] < 8760.0 and longer_than_24hrs_and_Diff(settime - risetime)[0] == True:
         risetime = obs.next_rising(body,start=startNightTime + datetime.timedelta(days=1)).datetime()   # if difference is less than a year but more than a day, then find the next risetime.  This might be useful because of how many times (settime_counter) I might have changed the settime.  However, it is more than likely that settime_counter will , at most, equal 2. Therefore, I will have only need to bump up risetime once, which is exactly what I am doing.
-        try_transit = obs.next_transit(body, start=startNightTime + datetime.timedelta(days=1)).datetime()
+        transit_t = obs.next_transit(body, start=startNightTime + datetime.timedelta(days=1)).datetime()
         
     
     # at this point settime is after RIGHT NOW-time and after the risetime.  AND sunrise can be after sunset or before sunset
@@ -203,24 +203,29 @@ def choose_primary(p_star_table, p_star_indice=0):
     #trans_meridian_time = datetime.timedelta(0, longer_than_24hrs_and_Diff(settime - risetime)[1] /2.0 *3600.00) + risetime
     
     #following_sunrise = obs.next_rising(ephem.Sun(), start=startNightTime + datetime.timedelta(days=2), use_center=True).datetime()
-    
-    #midnight_time = datetime.timedelta(0, longer_than_24hrs_and_Diff(subsequent_sunrise - sunset)[1] /2.0 *3600.00) + sunset
-    
-    #diff_transit_meridian_and_midnight = longer_than_24hrs_and_Diff(trans_meridian_time - midnight_time)[1]
+
+    if sunrise > sunset:
+        midnight_t = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(sunrise - sunset)[1]) /2.0 *3600.00) + sunset
+    elif risetime > sunrise and sunrise > sunset:
+        midnight_t = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(subsequent_sunrise - sunset)[1]) /2.0 *3600.00) + sunset
+        
+    diff_transit_meridian_and_midnight = longer_than_24hrs_and_Diff(transit_t - midnight_t)[1]
 
     
     #if p_star_indice==116: print('Sunrise : '+str(sunrise)+'\n\nSunset : '+str(sunset)+'\n\nMidnight : '+str(midnight_time)+'\n\n')
-    return observable, p_star_indice, time_l_visible, risetime, settime, try_transit, start_time, end_time
+    return observable, p_star_indice, time_l_visible, risetime, settime, diff_transit_meridian_and_midnight, transit_t, start_time, end_time
 
-all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for iterate in xrange(len(p_star_table)) if choose_primary(p_star_table, p_star_indice=iterate)[0]  == True]
+#all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for iterate in xrange(len(p_star_table)) if choose_primary(p_star_table, p_star_indice=iterate)[0]  == True]
 
 #best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 1.0 and np.abs(all_observables[iterate][5]) < 10.0]
 
-best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 1.0 ]
+#best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 4.0 ]
 
-#best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [116, 0]]
+best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9, 10]]
 
 #sorted_best_observables = l
+
+#'''
 
 # customize the output of the query results
 customS = Simbad()
@@ -257,7 +262,7 @@ def find_comparison(primary_S_indice):
 
 comparison_S_tables = [find_comparison(best_observables[p_S_ind][1]) for p_S_ind in xrange(len(best_observables))]
 
-
+#'''
 
 
 '''
@@ -278,9 +283,9 @@ comparison_S_tables = [find_comparison(best_observables[p_S_ind][1]) for p_S_ind
 
 
 
-'''
 
 
+#'''
 
 # input the primary and comparison stars into file formatted at a readable Target List
 
@@ -294,8 +299,9 @@ for telnum in np.array([1, 2, 3, 4]):
         
     for ind in xrange(len(comparison_S_tables)):
         
-'''
-'''
+
+        #'''
+        '''
         year_s_e = [best_observables[ind][3].year, best_observables[ind][4].year]
         year_s_e = [2015, 2015]
         month_s_e = [06,06]
@@ -306,11 +312,11 @@ for telnum in np.array([1, 2, 3, 4]):
                     
         starttime = datetime.datetime(year_s_e[0],month_s_e[0],day_s_e[0],hour_s_e[0],minute_s_e[0])  # this is just risetime
         endtime = datetime.datetime(year_s_e[1],month_s_e[1],day_s_e[1],hour_s_e[1],minute_s_e[1])   # this is just endtime
-'''
-'''
-        
+        '''
+        #'''
+
         starttime = best_observables[ind][-2]
-        endtime = starttime + datetime.timedelta(0, 1800.0, 000000)  # I just added by 30 minutes
+        #endtime = starttime + datetime.timedelta(0, 1800.0, 000000)  # I just added by 30 minutes
         endtime = best_observables[ind][-1]
 
         
@@ -343,9 +349,7 @@ for telnum in np.array([1, 2, 3, 4]):
             json.dump(target,outfile)
             outfile.write('\n')
 
-
-
-'''
+#'''
         
 '''    
 #Scraps
