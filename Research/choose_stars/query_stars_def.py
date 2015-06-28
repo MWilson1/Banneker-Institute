@@ -221,7 +221,7 @@ def choose_primary(p_star_table, p_star_indice=0):
 
 #best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 4.0 ]
 
-best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9, 10]]
+best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9]]
 
 #sorted_best_observables = l
 

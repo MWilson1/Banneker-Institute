@@ -1,4 +1,3 @@
 {"nbias": 11, "ndark": 11, "nflat": 9, "darkexptime": [300], "flatFilters": ["ip","R"]\, "WaitForMorning": true}
 {"nbiasEnd": 11, "ndarkEnd": 11, "nflatEnd": 9}
 {"name": "HD   2951", "ra": 8.4797054000000003, "dec": 75.464864199999994, "starttime": "2015-06-29 03:11:46", "endtime": "2015-06-29 11:18:43", "filter": ["ip"], "exptime": [300], "num": [1], "defocus": 0.0, "selfguide": true, "guide": false, "cycleFilter": true, "positionAngle": 0.0}
-
