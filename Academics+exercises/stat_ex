@@ -49,14 +49,6 @@ def poly(x_vals, a_vals, plot=False, sigmas=0):
     x_Likel = np.sum(Likel, axis=0)
     y_Likel = np.sum(Likel, axis=1)
     
-    ''' 
-    d_vals = np.poly1d(a_vals)(x_vals) + sigmas*rand.randn(len(x_vals))
-    mu_vals = np.poly1d(a_vals[0])(x_vals)
-
-    chi_sq = np.sum(((d_vals - mu_vals)/sigmas)**2)
-    log_L = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
-    '''
-    
     '''
     x_mat = np.resize(x_vals*1.0,(len(a_vals),len(x_vals)))
     power_mat = np.resize(np.arange(len(a_vals))*1.0, (len(x_vals), len(a_vals))).T
@@ -89,14 +81,14 @@ def poly(x_vals, a_vals, plot=False, sigmas=0):
         plt.plot(a_vals[0], x_Likel)
         plt.title('1D gaussian distribution from 2D Likelihood matrix')
         plt.xlabel(r'A$_0$ sums ')
-        plt.ylabel(r'values of Likelihood')
+        plt.ylabel(r'Values of Likelihood')
 
         fig4 = plt.figure(4)
         plt.clf()
         plt.plot(a_vals[1], y_Likel)
         plt.title('1D gaussian distribution from 2D Likelihood matrix')
         plt.xlabel(r'A$_1$ sums ')
-        plt.ylabel(r'values of Likelihood')
+        plt.ylabel(r'Values of Likelihood')
         #plt.limit
 
         
@@ -106,3 +98,22 @@ def poly(x_vals, a_vals, plot=False, sigmas=0):
         #plt.errorbar(x_vals, y_vals, yerr = uncert, fmt='s', linewidth= 1.5)
         plt.show()
     return Likel
+
+
+def poly1st(x_vals, a_values, plot=False, sigma=0):
+    
+    x_mat = np.resize(x_vals*1.0,(len(a_values),len(x_vals)))
+    power_mat = np.resize(np.arange(len(a_values))*1.0, (len(x_vals), len(a_values))).T
+    a_mat = np.resize(a_values*1.0,(len(x_vals),len(a_values))).T
+    mats= x_mat**power_mat*a_mat
+    y_vals = np.sum(mats, axis=0) + sigma*rand.randn(len(x_vals))
+
+    model_y_vals = np.sum(mats, axis=0)
+
+    if plot:
+        fig1 = plt.figure(1)
+        plt.clf()
+        plt.scatter(x_vals, y_vals)
+        #plt.plot(x_vals, mu_vals)
+        plt.plot(x_vals, model_y_vals)
+        #plt.plot(x_vals, np.poly1d(a_values)(x_vals))
