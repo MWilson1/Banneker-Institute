@@ -40,7 +40,7 @@ def linefit(d_vals, sigmas, row):
     #print(log_L)
     return log_L
 
-def poly(x_vals, a_vals, plot=False, sigmas=0):
+def poly(x_vals, a_vals, sigmas, plot=False):
     a_1st_set = np.array([1,2])
     d_vals = np.poly1d(a_1st_set)(x_vals) + sigmas*rand.randn(len(x_vals))
 
