@@ -64,11 +64,14 @@ def poly(x_vals, a_vals, plot=False, sigmas=0):
     #stats=np.linregress(x_vals, y_vals)
     #uncert = rand.random(len(x_vals))*7
     if plot:
+        
         fig1 = plt.figure(1)
         plt.clf()
         plt.scatter(x_vals, d_vals)
         #plt.plot(x_vals, mu_vals)
-        plt.plot(x_vals, np.poly1d(a_1st_set)(x_vals))
+        #plt.plot(x_vals, np.poly1d(a_1st_set)(x_vals))
+        plt.xlabel(r'x_vals')
+        plt.ylabel(r'd_vals')
         
         fig2 = plt.figure(2)
         plt.clf()

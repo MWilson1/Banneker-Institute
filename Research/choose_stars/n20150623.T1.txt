@@ -1,2 +1,0 @@
-{"nbias": 11, "ndark": 11, "nflat": 9, "darkexptime": [300], "flatFilters": ["ip","R"]\, "WaitForMorning": true}
-{"nbiasEnd": 11, "ndarkEnd": 11, "nflatEnd": 9}
