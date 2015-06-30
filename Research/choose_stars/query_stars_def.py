@@ -33,6 +33,9 @@ import json, collections, datetime
 
 import ephem
 
+from operator import itemgetter
+
+
 infile = str(sys.argv[1])
 
 with open(infile, 'r') as p_star_file:
@@ -73,10 +76,10 @@ p_star_Vmag = [float(p_star_table_arrays[ind][6]) for ind in xrange(len(p_star_t
 # make a table of the primary target stars' information
 p_star_table = Table([p_star_indice, p_star_id, p_star_spec, p_star_mass, p_star_RA, p_star_Dec, p_star_Vmag], names=('Indice', 'ID', 'Spec Type', 'Mass (solar)', 'RA (deg)', 'Dec (deg)', 'V mag'))
 
-
+num_of_days = 14
 
 # Get information on sunset, sunrise and astronomical twilight.  Account for location of telescope.
-for day_counter in xrange(14):
+for day_counter in xrange(num_of_days):
     
     #tonight = datetime.date.today() + datetime.timedelta(days=1)
 
@@ -237,23 +240,23 @@ for day_counter in xrange(14):
         diff_transit_meridian_and_midnight = longer_than_24hrs_and_Diff(transit_t - midnight_t)[1]
 
     
-        #if p_star_indice==116: print('Sunrise : '+str(sunrise)+'\n\nSunset : '+str(sunset)+'\n\nMidnight : '+str(midnight_time)+'\n\n')
+        #if p_star_indice==9: print('Sunrise : '+str(sunrise)+'\n\nSunset : '+str(sunset)+'\n\nMidnight : '+str(midnight_time)+'\n\n')
         return observable, p_star_indice, time_l_visible, risetime, settime, diff_transit_meridian_and_midnight, transit_t, start_time, end_time
 
-    #all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for iterate in xrange(len(p_star_table)) if choose_primary(p_star_table, p_star_indice=iterate)[0]  == True]
+    all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for iterate in xrange(len(p_star_table)) if choose_primary(p_star_table, p_star_indice=iterate)[0]  == True]
 
-    #best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 5.0 and np.abs(all_observables[iterate][5]) < 3.0]
+    best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 6.0 and np.abs(all_observables[iterate][5]) < 3.0]
 
     #best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 4.0 ]
     
-    best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9]]
+    #best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9]]
 
-    #sorted_best_observables = l
+    srted_best_observables = sorted(best_observables, key=itemgetter(-2))
+    print(srted_best_observables)
 
-    #'''
 
 
-    def query_stars(p_star_table, best_observables):
+    def query_stars(p_star_table, srted_best_observables):
         # customize the output of the query results
         customS = Simbad()
         customS.remove_votable_fields('coordinates')
@@ -278,23 +281,25 @@ for day_counter in xrange(14):
         #PROBABLY UNNECESSARY
 
         # criteria-query for comparison stars based on the parameters: V magnitude, vicinity, and if it is not variable, (and maybe color)
+
         def find_comparison(primary_S_indice):
             radius = 5
+            print(primary_S_indice)
             Comp_table = customS.query_criteria('region(circle, '+p_star_table['ID'][primary_S_indice]+', '+str(radius)+'d)', 'maintypes=*', 'maintypes!=V*', 'Vmag < '+str(mags_V_p[primary_S_indice]), 'Vmag > '+str(mags_V_m[primary_S_indice]))
             while len(Comp_table) < 3:
                 radius += 5
                 Comp_table = customS.query_criteria('region(circle, '+p_star_table['ID'][primary_S_indice]+', '+str(radius)+'d)', 'maintypes=*', 'maintypes!=V*', 'Vmag < '+str(mags_V_p[primary_S_indice]), 'Vmag > '+str(mags_V_m[primary_S_indice])) # if so, then just search within a 10 degree radius rather than a 5 degree radius
+                print('hey')
                 
             return Comp_table
 
-
-        comparison_S_tables = [find_comparison(best_observables[p_S_ind][1]) for p_S_ind in xrange(len(best_observables))]
+        comparison_S_tables = [find_comparison(srted_best_observables[p_S_ind][1]) for p_S_ind in xrange(len(srted_best_observables))]
+        
         return comparison_S_tables
 
-    if day_counter == 0: comparison_S_tables = query_stars(p_star_table, best_observables)
-
-
-
+    if day_counter == 0: comparison_S_tables = query_stars(p_star_table, srted_best_observables)
+    print('')
+    print(len(comparison_S_tables))
 
     # input the primary and comparison stars into file formatted at a readable Target List
 
@@ -308,16 +313,15 @@ for day_counter in xrange(14):
         
         for ind in xrange(len(comparison_S_tables)):
 
-
-            starttime = best_observables[ind][-2]
+            starttime = srted_best_observables[ind][-2]
             #endtime = starttime + datetime.timedelta(0, 1800.0, 000000)  # I just added by 30 minutes
-            endtime = best_observables[ind][-1]
+            endtime = srted_best_observables[ind][-1]
 
         
             if telnum == 1:
-                name = p_star_table['ID'][best_observables[ind][1]]
-                rahrs = p_star_table['RA (deg)'][best_observables[ind][1]]
-                decdegs = p_star_table['Dec (deg)'][best_observables[ind][1]]
+                name = p_star_table['ID'][srted_best_observables[ind][1]]
+                rahrs = p_star_table['RA (deg)'][srted_best_observables[ind][1]]
+                decdegs = p_star_table['Dec (deg)'][srted_best_observables[ind][1]]
             else:
                 name = comparison_S_tables[ind]['MAIN_ID'][telnum - 2]
                 rahrs = comparison_S_tables[ind]['RA_d'][telnum - 2]
@@ -343,7 +347,6 @@ for day_counter in xrange(14):
                 json.dump(target,outfile)
                 outfile.write('\n')
 
-#'''
         
 '''    
 #Scraps

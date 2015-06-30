@@ -13,15 +13,15 @@ plt.ion()
 #plt.close('all')
 
 x_vals = np.array([1, 2, 3, 4, 5], dtype=float)
-a_0 = np.linspace(0,2,25)
-a_1 = np.linspace(1,3,25)
+a_0 = np.linspace(0,2,75)
+a_1 = np.linspace(1,3,50)
 a_vals = np.array([a_0, a_1])
 
 #a_1st_set = np.array([1,2])
 #a_vals = np.array([1,2])
 
 sigmas = np.ones(len(x_vals))*0.5
-log_L = np.ones((len(a_vals[0]),  len(a_vals[1])))
+log_L = np.ones((len(a_vals[1]),  len(a_vals[0])))  # a0 is y-intercept corresponding to each column (x-axis in log_L matrix)
 
 row = -1.0
 
@@ -48,8 +48,12 @@ def poly1st(x_vals, a_values, plot=False, sigma=0):
 
 
 
+
+
+        
 def poly(x_vals, a_vals, sigmas, plot=False):
     a_1st_set = np.array([1,2])
+    
     x_mat = np.resize(x_vals*1.0,(len(a_1st_set),len(x_vals)))
     power_mat = np.resize(np.arange(len(a_1st_set))*1.0, (len(x_vals), len(a_1st_set))).T
     a_mat = np.resize(a_1st_set*1.0,(len(x_vals),len(a_1st_set))).T
@@ -58,8 +62,10 @@ def poly(x_vals, a_vals, sigmas, plot=False):
     #print(d_vals)
     #d_vals = np.poly1d(np.fliplr([a_1st_set])[0])(x_vals) + sigmas*rand.randn(len(x_vals))
 
-    Likel = np.exp(linefit(d_vals, sigmas, row))
-
+    ln_Likel = linefit(d_vals, sigmas, log_L, row)
+    Likel = np.exp(ln_Likel - np.max(ln_Likel))
+    
+    # Marginalization
     x_Likel = np.sum(Likel, axis=0)
     y_Likel = np.sum(Likel, axis=1)
     
@@ -89,8 +95,8 @@ def poly(x_vals, a_vals, sigmas, plot=False):
         
         fig2 = plt.figure(2)
         plt.clf()
-        x_coords, y_coords = meshgrid(a_vals[0], a_vals[1])
-        con_plot = contour(x_coords, y_coords, Likel)
+        x_coords, y_coords = meshgrid(a_vals[0], a_vals[1]) # unnecessary
+        con_plot = contour(x_coords, y_coords, Likel) # contourf() would fill the ellipses with color
         clabel(con_plot, inline=True, fontsize=10)
         plt.xlabel(r'likely a$_0$ values')
         plt.ylabel(r'likely a$_1$ values')
@@ -108,32 +114,36 @@ def poly(x_vals, a_vals, sigmas, plot=False):
         plt.title('1D gaussian distribution from 2D Likelihood matrix')
         plt.xlabel(r'A$_1$ sums ')
         plt.ylabel(r'Values of Likelihood')
-        #plt.limit
 
         
         #!plt.scatter(x_vals, d_vals)
         #plt.plot(x_vals, np.poly1d(np.fliplr([a_vals])[0])(x_vals))
         #!plt.plot(x_vals, mu_vals)
         #plt.errorbar(x_vals, y_vals, yerr = uncert, fmt='s', linewidth= 1.5)
-        plt.show()
+        #plt.show()
     return Likel, x_Likel, y_Likel
 
 
-def linefit(d_vals, sigmas, row):
+
+
+def linefit(d_vals, sigmas, log_L, row): # get the ln(Likelihood)
     for j in a_vals[1]:
         row += 1.0
         col = -1.0
         for i in a_vals[0]:
             col += 1.0
-            #for x_i in xrange(len(x_vals)):
+            
             a_set = np.array([i, j])
 
             #print(str(row)+'  '+str(col))
             mu_vals = a_set[0] + a_set[1]*x_vals
             chi_sq = np.sum(((d_vals - mu_vals)/sigmas)**2)
-            log_L[row][col] = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
-    #print(log_L)
+            #log_L[row][col] = -(1.0/2.0)*np.sum(np.log(2*np.pi*sigmas**2)) - (1.0/2.0)*chi_sq
+            log_L[row][col] = -(1.0/2.0)*chi_sq
+            
     return log_L
+
+
 
 
 def cdf(a_vals, plot=False):
@@ -143,7 +153,7 @@ def cdf(a_vals, plot=False):
         plt.close(6)
     except:
         pass
-    for axis in [1,2]:
+    for axi in [1,2]:
         '''
         x_Likel = likely_stuff[1]
         y_Likel = likely_stuff[2]
@@ -157,15 +167,16 @@ def cdf(a_vals, plot=False):
         a0_best_el = np.where((c_d_f < 0.55) & (c_d_f > 0.45))[0][0]
         a0_best = a_vals[0][a0_best_el]
         '''
-        max_a = np.sum(likely_hood_x_y[axis])
-        area_a = np.ones(len(likely_hood_x_y[axis]))
-        for el in xrange(len(a_vals[axis-1])):
-            area_a[el] = np.sum(likely_hood_x_y[axis][0:el+1])
-
-
+        
+        max_a = np.sum(likely_hood_x_y[axi])  
+        area_a = np.ones(len(likely_hood_x_y[axi]))
+        for el in xrange(len(a_vals[axi-1])):
+            area_a[el] = np.sum(likely_hood_x_y[axi][0:el+1])
+    
+        
         c_d_f = area_a/max_a
 
-        interp = interp1d(c_d_f, a_vals[axis-1])
+        interp = interp1d(c_d_f, a_vals[axi-1])
         a_best = interp(0.5)
         a_limits = interp(np.array([0.5 - 0.683/2.0, 0.5 + 0.683/2.0]))
         decim = [1,1]
@@ -174,61 +185,64 @@ def cdf(a_vals, plot=False):
         uncertainties = np.array([round(a_best - a_limits[0], decim[0]), round(a_limits[1] - a_best, decim[1])])
         
         #a_best_el = np.where((c_d_f < 0.60) & (c_d_f > 0.40))[0][0]
-        #a_best = a_vals[axis-1][a_best_el]
-
-        fig_n = plt.figure()
-        ax0 = fig_n.add_subplot(211)
-        ax1 = fig_n.add_subplot(212, sharex=ax0)
-        ax0.plot(a_vals[axis-1], likely_hood_x_y[axis])
-        ax0.plot((a_best, a_best), ((np.max(likely_hood_x_y[axis]), 0)))
-        ax0.set_ylabel(r'a$_'+str(axis-1)+'$ Likelihoods', fontsize=14)
-        #ax0.set_xlabel(r'a$_'+str(axis-1)+'$ values')
-        ax1.plot(a_vals[axis-1], c_d_f)
-        ax1.plot((a_best, a_best), (( 0.5, 0)))
-        ax1.errorbar(a_best, 0.5, xerr=[[uncertainties[0]], [uncertainties[1]]], fmt='^')
-        ax1.set_ylabel('CDF (total Area)')
-        ax1.set_xlabel(r'a$_'+str(axis-1)+'$ values')
+        #a_best = a_vals[axi-1][a_best_el]
         
-        ax0.set_title(r'a$_'+str(axis-1)+' = '+str(round(a_best,np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
+        if plot==True:
+            fig_n = plt.figure()
+            ax0 = fig_n.add_subplot(211)
+            ax1 = fig_n.add_subplot(212, sharex=ax0)
+            
+            ax0.plot(a_vals[axi-1], likely_hood_x_y[axi])
+            ax0.plot((a_best, a_best), ((np.max(likely_hood_x_y[axi]), 0)))
+            ax0.set_ylabel(r'a$_'+str(axi-1)+'$ Likelihoods', fontsize=14)
+            #ax0.set_xlabel(r'a$_'+str(axi-1)+'$ values')
+            
+            ax1.plot(a_vals[axi-1], c_d_f)
+            ax1.plot((a_best, a_best), (( c_d_f.max(), 0)))
+            ax1.errorbar(a_best, 0.5, xerr=[[uncertainties[0]], [uncertainties[1]]], fmt='^')
+            ax1.set_ylabel('CDF (total Area)')
+            ax1.set_xlabel(r'a$_'+str(axi-1)+'$ values')
+        
+            ax0.set_title(r'a$_'+str(axi-1)+' = '+str(round(a_best,np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
 
         
         '''
         fi, axarr = plt.subplots(2, sharex=True)        
-        axarr[0].plot(a_vals[axis-1], likely_hood_x_y[axis])
-        axarr[0].plot((a_best, a_best), ((np.max(likely_hood_x_y[axis]), 0)))
-        #axarr[0].ylabel(r'a$_'+str(axis-1)+'$ Likelihoods', fontsize=10) 
-        axarr[0].xlabel(r'a$_'+str(axis-1)+'$ values')
-        axarr[1].plot(a_vals[axis-1], c_d_f)
+        axarr[0].plot(a_vals[axi-1], likely_hood_x_y[axi])
+        axarr[0].plot((a_best, a_best), ((np.max(likely_hood_x_y[axi]), 0)))
+        #axarr[0].ylabel(r'a$_'+str(axi-1)+'$ Likelihoods', fontsize=10) 
+        axarr[0].xlabel(r'a$_'+str(axi-1)+'$ values')
+        axarr[1].plot(a_vals[axi-1], c_d_f)
         axarr[1].plot((a_best, a_best), (( 0.5, 0)))
         axarr[1].errorbar(a_best, 0.5, xerr=[[uncertainties[0]], [uncertainties[1]]], fmt='^')
-        axarr[1].set_title(r'a$_'+str(axis-1)+' = '+str(round(a_best,np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
+        axarr[1].set_title(r'a$_'+str(axi-1)+' = '+str(round(a_best,np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
         axarr[1].ylabel('CDF (total Area)')
-        axarr[1].xlabel(r'a$_'+str(axis-1)+'$ values')
+        axarr[1].xlabel(r'a$_'+str(axi-1)+'$ values')
         '''
         
         '''              
-        uncertainty = uncl(a_vals, a_best, c_d_f, axis)
+        uncertainty = uncl(a_vals, a_best, c_d_f, axi)
 
         #fig = plt.figure(5)
         fi, axarr = plt.subplots(2, sharex=True)
-        axarr[0].plot(a_vals[axis-1], likely_hood_x_y[axis])
-        axarr[0].plot((a_best, a_best), ((likely_hood_x_y[axis][a_best_el], 0)))
-        axarr[1].plot(a_vals[axis-1], c_d_f)
+        axarr[0].plot(a_vals[axi-1], likely_hood_x_y[axi])
+        axarr[0].plot((a_best, a_best), ((likely_hood_x_y[axi][a_best_el], 0)))
+        axarr[1].plot(a_vals[axi-1], c_d_f)
         axarr[1].plot((a_best, a_best), ((c_d_f[a_best_el], 0)))
         axarr[0].set_title('Uncertainty for this run = '+str(uncertainty))
         '''
-    return a_best, a_limits
+    return a_best, uncertainties
 
 '''
-def uncl(a_vals, a_best, c_d_f, axis):
-    inter = interp1d(c_d_f, a_vals[axis-1])
+def uncl(a_vals, a_best, c_d_f, axi):
+    inter = interp1d(c_d_f, a_vals[axi-1])
     a_limits = inter(np.array([0.5 - 0.683/2.0, 0.5 + 0.683/2.0]))
     #a_best = np.average
     
 '''
 '''
     uncert=np.array([])
-    for el in xrange(len(a_vals[axis-1])):
+    for el in xrange(len(a_vals[axi-1])):
         left_el = a_best_el - el 
         right_el = a_best_el + el
         
@@ -237,7 +251,7 @@ def uncl(a_vals, a_best, c_d_f, axis):
             print(check_sum)
             
             if check_sum > 0.5 and check_sum < 0.8:
-                uncert = np.concatenate((uncert, [a_best - a_vals[axis-1][left_el]]))
+                uncert = np.concatenate((uncert, [a_best - a_vals[axi-1][left_el]]))
         except IndexError:
             return np.min(uncert)
 '''
