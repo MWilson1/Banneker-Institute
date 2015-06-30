@@ -77,4 +77,3 @@ for itera in xrange(50):
     his_N_c_pos_N_in_Pi[1]
     
 
-
