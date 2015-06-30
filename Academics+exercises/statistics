@@ -36,5 +36,6 @@ def prob(A1, the_mu, sig1, sig2, A2=None):
     
     return probab, probab1, probab2 
 
-
 #prob(A1, the_mu, sig1, sig2, A2)
+
+
