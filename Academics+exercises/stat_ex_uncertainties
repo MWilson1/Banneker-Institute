@@ -27,13 +27,13 @@ row = -1.0
 
 
 
-def poly1st(x_vals, a_values, plot=False, sigma=0):
+def poly1st(x_vals, a_values, sigmas=0, plot=False):
     
     x_mat = np.resize(x_vals*1.0,(len(a_values),len(x_vals)))
     power_mat = np.resize(np.arange(len(a_values))*1.0, (len(x_vals), len(a_values))).T
     a_mat = np.resize(a_values*1.0,(len(x_vals),len(a_values))).T
     mats= x_mat**power_mat*a_mat
-    y_vals = np.sum(mats, axis=0) + sigma*rand.randn(len(x_vals))
+    y_vals = np.sum(mats, axis=0) + sigmas*rand.randn(len(x_vals))
 
     model_y_vals = np.sum(mats, axis=0)
 

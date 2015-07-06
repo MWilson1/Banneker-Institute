@@ -25,6 +25,7 @@ Note: make sure that any initial target list of stars, such as the 'eta_merged_l
 import sys
 
 from astropy.table import Table, Column
+
 import numpy as np
 
 from astroquery.simbad import Simbad
@@ -76,7 +77,12 @@ p_star_Vmag = [float(p_star_table_arrays[ind][6]) for ind in xrange(len(p_star_t
 # make a table of the primary target stars' information
 p_star_table = Table([p_star_indice, p_star_id, p_star_spec, p_star_mass, p_star_RA, p_star_Dec, p_star_Vmag], names=('Indice', 'ID', 'Spec Type', 'Mass (solar)', 'RA (deg)', 'Dec (deg)', 'V mag'))
 
+
+
+
+
 num_of_days = 14
+
 
 # Get information on sunset, sunrise and astronomical twilight.  Account for location of telescope.
 for day_counter in xrange(num_of_days):
@@ -114,13 +120,17 @@ for day_counter in xrange(num_of_days):
         not_vis_former = subsequent_sunrise
     else:
         not_vis_latter = obs.next_setting(ephem.Sun(), start=startNightTime + datetime.timedelta(days=1),use_center=True).datetime() # latest sunset
-        not_vis_former = subsequent_sunset
-
-
-
+        not_vis_former = subsequent_sunset   
+    
+       
+    if day_counter == 0: print('For the first day/night,\nSunrise : '+str(sunrise)+'\n\nSunset : '+str(sunset)+'\n\nFollowing Sunrise : '+str(subsequent_sunrise)+'\n\nFollowing Sunset : '+str(subsequent_sunset)+'\n\n')
+    
+     
+    def longer_than_24hrs_and_Diff(diff_of_times): # must be a datetime type
+            return np.abs(diff_of_times.days*24.0 + diff_of_times.seconds/3600.00) > 24.0 , diff_of_times.days*24.0 + diff_of_times.seconds/3600.00
 
     # Go through each primary target star and find its rise and set time.
-    def choose_primary(p_star_table, p_star_indice=0):        
+    def choose_primary(p_star_table, p_star_indice=0):
         name = p_star_table['ID'][p_star_indice]
         rahrs = p_star_table['RA (deg)'][p_star_indice]
         decdegs = p_star_table['Dec (deg)'][p_star_indice]
@@ -142,41 +152,41 @@ for day_counter in xrange(num_of_days):
         time_l_visible = None
         start_time = None
         end_time = None
-        midnight_t = None
+        
     
         # the "NeverUpError" can occur so I need this try statement
         try:
             risetime = obs.next_rising(body,start=startNightTime).datetime() # start=startNightTime + datetime.timedelta(days=1)    
             settime = obs.next_setting(body,start=startNightTime).datetime()
-            transit_t = obs.next_transit(body, start=startNightTime).datetime()
+            transit_time = obs.next_transit(body, start=startNightTime).datetime()
         
         except ephem.NeverUpError:
-            print('The NeverUpError occurred for p_star_indice = '+str(p_star_indice))
+            if day_counter == 0: print('The NeverUpError occurred for p_star_indice = '+str(p_star_indice))
             observable = False
             return observable, time_l_visible
     
         except ephem.AlwaysUpError:
-            print('The AlwaysUpError occurred for p_star_indice = '+str(p_star_indice))
+            if day_counter == 0: print('The AlwaysUpError occurred for p_star_indice = '+str(p_star_indice))
             observable = False
             return observable, time_l_visible
 
     
-        def longer_than_24hrs_and_Diff(diff_of_times): # must be a datetime type
-            return np.abs(diff_of_times.days*24.0 + diff_of_times.seconds/3600.00) > 24.0 , diff_of_times.days*24.0 + diff_of_times.seconds/3600.00
+        #def longer_than_24hrs_and_Diff(diff_of_times): # must be a datetime type
+         #   return np.abs(diff_of_times.days*24.0 + diff_of_times.seconds/3600.00) > 24.0 , diff_of_times.days*24.0 + diff_of_times.seconds/3600.00
 
         settime_counter = 0
         while settime < today:
             settime = obs.next_setting(body,start=startNightTime + datetime.timedelta(days=settime_counter)).datetime()   #if so, then find the very next settime
             settime_counter += 1
-            #print(str(settime_counter)+'  \n')
+            
         if settime < risetime: settime = obs.next_setting(body,start=startNightTime + datetime.timedelta(days=1)).datetime()   #if so, then find the very next settime
     
         if longer_than_24hrs_and_Diff(settime - risetime)[1] < 8760.0 and longer_than_24hrs_and_Diff(settime - risetime)[0] == True:
             risetime = obs.next_rising(body,start=startNightTime + datetime.timedelta(days=1)).datetime()   # if difference is less than a year but more than a day, then find the next risetime.  This might be useful because of how many times (settime_counter) I might have changed the settime.  However, it is more than likely that settime_counter will , at most, equal 2. Therefore, I will have only need to bump up risetime once, which is exactly what I am doing.
-            transit_t = obs.next_transit(body, start=startNightTime + datetime.timedelta(days=1)).datetime()
+            transit_time = obs.next_transit(body, start=startNightTime + datetime.timedelta(days=1)).datetime()
         
     
-        # at this point settime is after RIGHT NOW-time and after the risetime.  AND sunrise can be after sunset or before sunset
+        # at this point settime is after RIGHT NOW-time and after the risetime.  AND sunrise is after sunset
      
     
         if longer_than_24hrs_and_Diff(settime - risetime)[0] == True: observable = False # if the set and rise times are more than one day apart, then this star won't be visible until a year later
@@ -189,6 +199,7 @@ for day_counter in xrange(num_of_days):
 
     
         # Determine if star is visible between sunset and sunrise.  Also, find the length of time it is visible.
+        
         if observable != False:
             # at this point settime is after RIGHT NOW-time, after the risetime, and after sunset time.   
             observable = True
@@ -227,32 +238,47 @@ for day_counter in xrange(num_of_days):
                     start_time = sunset
                     end_time = sunrise
                     
-    
-        #trans_meridian_time = datetime.timedelta(0, longer_than_24hrs_and_Diff(settime - risetime)[1] /2.0 *3600.00) + risetime
-    
-        #following_sunrise = obs.next_rising(ephem.Sun(), start=startNightTime + datetime.timedelta(days=2), use_center=True).datetime()
 
         if risetime > sunrise and sunrise > sunset:
-            midnight_t = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(subsequent_sunrise - subsequent_sunset)[1]) /2.0 *3600.00) + subsequent_sunset
+            midnight_time = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(subsequent_sunrise - subsequent_sunset)[1]) /2.0 *3600.00) + subsequent_sunset
         elif sunrise > sunset and risetime < sunrise:
-            midnight_t = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(sunrise - sunset)[1]) /2.0 *3600.00) + sunset
+            midnight_time = datetime.timedelta(0, np.abs(longer_than_24hrs_and_Diff(sunrise - sunset)[1]) /2.0 *3600.00) + sunset
         
-        diff_transit_meridian_and_midnight = longer_than_24hrs_and_Diff(transit_t - midnight_t)[1]
-
+        diff_transit_meridian_and_midnight = longer_than_24hrs_and_Diff(transit_time - midnight_time)[1]
+        
+        
+        return observable, p_star_indice, time_l_visible, risetime, settime, diff_transit_meridian_and_midnight, transit_time, start_time, end_time
     
-        #if p_star_indice==9: print('Sunrise : '+str(sunrise)+'\n\nSunset : '+str(sunset)+'\n\nMidnight : '+str(midnight_time)+'\n\n')
-        return observable, p_star_indice, time_l_visible, risetime, settime, diff_transit_meridian_and_midnight, transit_t, start_time, end_time
 
     all_observables = [choose_primary(p_star_table, p_star_indice=iterate) for iterate in xrange(len(p_star_table)) if choose_primary(p_star_table, p_star_indice=iterate)[0]  == True]
-
-    best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 6.0 and np.abs(all_observables[iterate][5]) < 3.0]
-
+    
+    if day_counter == 0:
+        optimal_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 6.0 and np.abs(all_observables[iterate][5]) < 3.0]
+        opt_star_indices = [optimal_observables[counter][1] for counter in xrange(len(optimal_observables))]
+        opt_star_indices = np.array(opt_star_indices)
+        best_observables = optimal_observables
+    else:
+        best_observables = []
+        for iterate in xrange(len(optimal_observables)):
+            if len(np.where(opt_star_indices == optimal_observables[iterate][1])[0]) == 1:
+                best_observables.append(optimal_observables[iterate])
+                #print('hey')
+                
+    #print(best_observables)        
+    for iterate in xrange(len(opt_star_indices)):
+        star_gone = None
+        for counting in xrange(len(best_observables)):
+            if len(np.where(opt_star_indices[iterate] == best_observables[counting][1])) == 1: star_gone = False
+            
+        if star_gone != False: print('Primary Star of row '+str(opt_star_indices[iterate])+' does not meet criteria on '+str(day_counter)+' day(s) from now')
+                
+    '''
     #best_observables = [all_observables[iterate] for iterate in xrange(len(all_observables)) if all_observables[iterate][2] > 4.0 ]
     
     #best_observables =  [choose_primary(p_star_table, p_star_indice=iterate) for iterate in [9]]
 
     srted_best_observables = sorted(best_observables, key=itemgetter(-2))
-    print(srted_best_observables)
+    #print(srted_best_observables)
 
 
 
@@ -347,7 +373,7 @@ for day_counter in xrange(num_of_days):
                 json.dump(target,outfile)
                 outfile.write('\n')
 
-        
+        '''
 '''    
 #Scraps
 
