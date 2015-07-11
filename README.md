@@ -1,2 +1,2 @@
-# My-test
-This is just a test
+# Message
+My first repository
