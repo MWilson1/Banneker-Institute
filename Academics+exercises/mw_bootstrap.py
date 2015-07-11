@@ -9,6 +9,7 @@ from matplotlib import rc
 from scipy.interpolate import interp1d
 from numpy.linalg import inv
 #from mpl_toolkits.mplot3d import Axes3D
+import math
 
 #from scipy.stats import linregress
 
@@ -330,10 +331,12 @@ def mwpolyfit(x_vals, a_values, figs, sigmas=1, plot=False):
 
 
 
-
+####################################################################
 
 
 # Monte Carlo Bootstrap
+
+
 
 def mwpolyfit(x_vals, data, power_mat, sigmas=1):
     if type(sigmas) ==float or type(sigmas)==int: sigmas = np.ones(len(x_vals))*sigmas  
@@ -417,7 +420,7 @@ for run in xrange(trials):
 
 
     
-def histog(x_hist_vals, A_trials_mat, figs, binning=50, plot=False):
+def histog(A_trials_mat, figs, binning=50, plot=False):
     for a_coeff in xrange(len(a_values)):
         a_col = A_trials_mat.T[a_coeff]
         hist_vals, bin_edges = np.histogram(a_col, bins=binning)
