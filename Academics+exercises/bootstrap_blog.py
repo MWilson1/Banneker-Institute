@@ -20,9 +20,11 @@ plt.ion()
 #x_vals = np.array([1, 2, 3, 4, 5], dtype=float)
 x_vals = np.array([-1, -0.5, 0, 0.5, 1], dtype=float)*10.0
 
+'''
 a_0 = np.linspace(0.4,1.6,120)
-a_1 = np.linspace(1,3,100)    
+a_1 = np.linspace(0,3,100)
 a_vals = np.array([a_0, a_1])
+'''
 
 #a_values = np.array([1,2], dtype=float)
 a_values=np.array([1, 0, 2], dtype=float)
