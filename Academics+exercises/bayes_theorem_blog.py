@@ -11,6 +11,10 @@ plt.ion()
 results = np.array([1,1,0,0,0,0,1,1,1,0,0,1,1,1,0,1,1,1,1,1])
 #[heads,heads,tails,tails,tails,tails,heads,heads,heads,tails,tails,heads,heads,heads,tails,heads,heads,heads,heads,heads]
 
+#results = np.concatenate((results, np.zeros(100))) # testing
+#print(results)
+
+
 figs = 1
 plt.figure(figs)
 plt.clf()
@@ -28,17 +32,15 @@ priors = gauss_pro()
 #print(priors)
 
 for d in xrange(len(results)):
-    if d == 4 or d== 9 or d==14 or d==19:
-        likely = likel(np.sum(results[0:d]), d+1, h_vals)
+    #if d == 4 or d== 9 or d==14 or d==19: #Bad!
+    if (d+1)%5 == 0:
+        likelies = likel(np.sum(results[0:d]), d+1, h_vals)
         
-        priors = priors*likely
-
+        priors = priors*likelies
         
-        #figs +=1
-        plt.plot(h_vals, priors/np.max(priors), label='Prior #'+str(d+1)) #+str(figs))
-        #if d==19: print(np.max(priors))
+        plt.plot(h_vals, priors/np.max(priors), label='Prior #'+str(d+1)) 
         plt.title('PDF Shifting throughout Iterations')
-        plt.xlabel('Fitting Parameter')
+        plt.xlabel('Fitting Parameter(s)')
         plt.ylabel('Probability')
 
 plt.legend()
