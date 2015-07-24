@@ -42,5 +42,6 @@ for d in xrange(len(results)):
         plt.title('PDF Shifting throughout Iterations')
         plt.xlabel('Fitting Parameter(s)')
         plt.ylabel('Probability')
-
+        plt.show()
+        
 plt.legend()

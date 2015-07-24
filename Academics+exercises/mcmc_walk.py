@@ -111,7 +111,7 @@ def walk_mcmc(x_vals = np.arange(20), data_sigmas = 3, pars = np.array([10, 500,
             plt.title('Simulated Data with and without noise')
             #plt.plot(x_vals, np.poly1d(np.fliplr([a_values])[0])(x_vals))
 
-            #plt.show() # unnecessary for the typical ipython
+            plt.show() # unnecessary for the typical ipython
             
         return y_vals, model_poly, figs
 
@@ -182,7 +182,8 @@ def walk_mcmc(x_vals = np.arange(20), data_sigmas = 3, pars = np.array([10, 500,
             plt.xlabel(r'a$_'+str(a_coeff)+'$ values')
 
             plt.title(r'Result: a$_'+str(a_coeff)+' = '+str(round(a_best, np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
-
+            plt.show() # in most cases unnecessary
+            
         return figs
 
 
@@ -319,7 +320,7 @@ def walk_mcmc(x_vals = np.arange(20), data_sigmas = 3, pars = np.array([10, 500,
             #plt.plot((pars_trial_tracker[ind][start_ind], pars_trial_tracker[ind][start_ind]), (np.max(pars_tracker[ind]),np.min(pars_tracker[ind]) ), 'green')
             plt.ylabel(r'Values of a$_'+str(ind)+'$ used to step')
             plt.xlabel('Trial at which step was taken')     
-            #plt.show() # unnecessary for the typical ipython
+            plt.show() # unnecessary for the typical ipython
 
             
             # Plot histograms        
@@ -339,7 +340,7 @@ def walk_mcmc(x_vals = np.arange(20), data_sigmas = 3, pars = np.array([10, 500,
             plt.hist(pars_tracker[ind], bins=binning)
             plt.xlabel(r'Values of a$_'+str(ind)+'$ used to step')
             plt.title(r'Histogram of parameters-values found after LM fitting')
-            #plt.show() # unnecessary for the typical ipython
+            plt.show() # unnecessary for the typical ipython
             
             #Find the CDF and uncertainties
             figs = histog(pars_tracker, ind, figs, binning, plot)

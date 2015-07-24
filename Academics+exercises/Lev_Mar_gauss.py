@@ -74,6 +74,7 @@ def gauss_gen(figs, x_vals, pars, data_sigmas=1, plot=False):  # only use this d
         plt.title('Data of Gaussian profile with and without noise')
         plt.xlabel('X values')
         plt.ylabel('Data points')
+        plt.show() # in most cases unnecessary
         
     return Data, model_gauss, figs
 
@@ -129,7 +130,7 @@ def mw_LMfit(figs, x_vals, Data, pars_g, sim_data_gauss, data_sigmas, plot=False
         plt.xlabel('X values')
         plt.ylabel('Measurement')
         plt.title('Fitting immediately after LM stats')
-        #plt.show() # unnecessary for the typical ipython
+        plt.show() # unnecessary for the typical ipython
         
     return new_D, params, figs
 

@@ -61,6 +61,7 @@ def mwpoly(x_vals, a_values, figs, sigmas=1, plot=False):
         plt.plot(x_vals, model_y_vals)
         plt.title('Simulated Data with and without noise')
         #plt.plot(x_vals, np.poly1d(np.fliplr([a_values])[0])(x_vals))
+        plt.show()
     return y_vals, power_mat, model_y_vals, figs
 
 ####################################################################
@@ -122,7 +123,8 @@ def mw_cdf(x_hist_vals, hist_vals, a_coeff, figs, plot=False):
         plt.xlabel(r'a$_'+str(a_coeff)+'$ values')
         
         plt.title(r'Result: a$_'+str(a_coeff)+' = '+str(round(a_best, np.max(decim)))+'_{-'+str(uncertainties[1])+'}^{+'+str(uncertainties[0])+'}$')
-
+        plt.show() #in most cases unnecessary
+        
     return figs
 
 
@@ -168,7 +170,8 @@ def histog(A_trials_mat, figs, binning=50, plot=False):  # run this after execfi
           plt.hist(A_trials_mat.T[a_coeff], bins=binning)
           plt.xlabel(r'a$_'+str(a_coeff)+'$ sampling')
           plt.ylabel(r'Amount of trials for a$_'+str(a_coeff)+'$')
-
+          plt.show() #in most cases unnecessary
+          
         # Call the mw_cdf function
         figs = mw_cdf(x_hist_vals, hist_vals, a_coeff, figs, plot)
 
