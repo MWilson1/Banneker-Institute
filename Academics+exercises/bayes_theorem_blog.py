@@ -37,7 +37,7 @@ for d in xrange(len(results)):
         likelies = likel(np.sum(results[0:d]), d+1, h_vals)
         
         priors = priors*likelies
-        
+    #if (d+1)%5 == 0:    # correct. but precision
         plt.plot(h_vals, priors/np.max(priors), label='Prior #'+str(d+1)) 
         plt.title('PDF Shifting throughout Iterations')
         plt.xlabel('Fitting Parameter(s)')
