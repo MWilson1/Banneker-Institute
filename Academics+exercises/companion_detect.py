@@ -28,7 +28,6 @@ metal_1 = metallicities[np.where(data == 1)]
 metal_0 = metallicities[np.where(data == 0)]
 
 
-
 #alphas: 0, 0.1
 
 #betas: 1, 3
@@ -63,7 +62,8 @@ def p_posterior(metal_0, metal_1, alphas=np.linspace(0,1,100), betas=np.linspace
         plt.xlabel(r'$\alpha$')
         plt.ylabel(r'$\beta$')
         plt.title('2D Contour of Posterior Matrix')
-
+        plt.show()
+        
     figs = pdf_2_cdf(alphas, betas, Posterior_m, figs, plot)
     
     return 
@@ -121,5 +121,6 @@ def pdf_2_cdf(alphas,betas, PDF_Matrix, figs,plot=False):
             upper_unc = str(uncertainties[0])
             
             plt.title(r'Result: $\%s = %s_{-%s}^{+%s}$' % (parameter, best_and_interval, lower_unc, upper_unc))
-
+            plt.show()
+            
     return figs
