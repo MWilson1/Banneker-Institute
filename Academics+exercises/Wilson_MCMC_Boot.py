@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-@author: Maurice Wilson
+Author: Maurice Wilson
 
 Concept
 ---------
