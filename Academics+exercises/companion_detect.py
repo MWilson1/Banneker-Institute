@@ -80,7 +80,6 @@ def likel(fracts_0, fracts_1):
     return np.prod(fracts_1)*np.prod(1-fracts_0)
 
 
-
 def pdf_2_cdf(alphas,betas, PDF_Matrix, figs,plot=False):
     param_conglom = [betas, alphas]
     
