@@ -123,3 +123,4 @@ def pdf_2_cdf(alphas,betas, PDF_Matrix, figs,plot=False):
             plt.show()
             
     return figs
+
