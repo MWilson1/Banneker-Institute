@@ -14,9 +14,6 @@ The statistical method employed applies the concept of the "Random Walk" or "Dru
 '''
 
 
-import numpy as np
-import math
-
 def MC_walking(model_calc, all_priors_index, Arguments_model, lnlikely_calc, mu_index, Arguments_lnlikely, trials, par_sigmas):
     '''Determine best fitting parameters and check Likelihoods around those parameters to find each parameter's confidence interval
 
@@ -74,6 +71,9 @@ def MC_walking(model_calc, all_priors_index, Arguments_model, lnlikely_calc, mu_
     >>>mu_index = 0
     >>>pars_tracker, pars_accept_counter, pars_trial_tracker, pars_trial_counter = MC_walking(gauss_calc, all_priors_index, Arguments_model, lnlikely_calc, mu_index, Arguments_lnlikely, trials, par_sigmas)
     '''
+
+    import numpy as np
+    import math
     
     # Make a few Error Messages
 
